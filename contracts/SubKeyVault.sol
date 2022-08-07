@@ -60,25 +60,9 @@ contract SubKeyVault is Ownable {
     );
   }
 
+  using ECDSA for bytes32;
   function checkSignatureValid(address signer, bytes32 hash, bytes memory signature) private pure {
-    bytes32 etherHash = getHashEthereum(bytes32ToString(hash));
-    (address recovered, ECDSA.RecoverError error) = ECDSA.tryRecover(etherHash, signature);
+    address recovered = hash.toEthSignedMessageHash().recover(signature);
     require(signer == recovered, "Invalid signature");
-  }
-
-  function getHashEthereum(string memory hash) private pure returns (bytes32){
-    return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
-  }
-
-  function bytes32ToString(bytes32 _bytes32) private pure returns (string memory) {
-    uint8 i = 0;
-    while (i < 32 && _bytes32[i] != 0) {
-      i++;
-    }
-    bytes memory bytesArray = new bytes(i);
-    for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
-      bytesArray[i] = _bytes32[i];
-    }
-    return string(bytesArray);
   }
 }
